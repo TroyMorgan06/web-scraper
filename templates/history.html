@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price History — Universal Product Tracker</title>
+  <style>
+    :root {
+      --ink: #1c1a17;
+      --muted: #5c574f;
+      --accent: #0b6e4f;
+      --line: #d9d2c6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at top left, #e8f0ea 0%, transparent 45%),
+        linear-gradient(180deg, #f6f3ee, #ebe6dc);
+      min-height: 100vh;
+    }
+    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    h1 { margin: 0 0 0.35rem; font-size: clamp(1.6rem, 3.5vw, 2.1rem); }
+    .lede { color: var(--muted); margin: 0 0 1.5rem; }
+    nav a { color: var(--accent); font-weight: 600; margin-right: 1rem; text-decoration: none; }
+    table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.65); }
+    th, td { text-align: left; padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <nav>
+      <a href="{{ url_for('index') }}">Products</a>
+      <a href="{{ url_for('history') }}">All history</a>
+    </nav>
+    <h1>
+      {% if product %}
+        History — {{ product.title or product.url }}
+      {% else %}
+        All price history
+      {% endif %}
+    </h1>
+    <p class="lede">Every check appends a row so you can see price and availability over time.</p>
+
+    {% if rows %}
+    <table>
+      <thead>
+        <tr>
+          <th>When (UTC)</th>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Availability</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.scraped_at }}</td>
+          <td>{{ row.title or row.url }}</td>
+          <td>{% if row.price is not none %}${{ row.price }}{% else %}—{% endif %}</td>
+          <td>{{ row.availability or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="empty">No history rows yet.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

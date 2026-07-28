@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Universal Product Tracker</title>
+  <style>
+    :root {
+      --ink: #1c1a17;
+      --muted: #5c574f;
+      --accent: #0b6e4f;
+      --soft: #d8ebe3;
+      --line: #d9d2c6;
+      --err: #8b2e2e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at top left, #e8f0ea 0%, transparent 45%),
+        linear-gradient(180deg, #f6f3ee, #ebe6dc);
+      min-height: 100vh;
+    }
+    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    h1 { margin: 0 0 0.35rem; font-size: clamp(1.8rem, 4vw, 2.4rem); }
+    .lede { color: var(--muted); margin: 0 0 1.5rem; }
+    nav a { color: var(--accent); font-weight: 600; margin-right: 1rem; text-decoration: none; }
+    form.track { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.25rem 0 1.75rem; }
+    input[type="url"] {
+      flex: 1 1 280px; padding: 0.75rem 0.9rem;
+      border: 1px solid var(--line); background: #fff; font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1.1rem; border: none;
+      background: var(--accent); color: #fff; font-weight: 600; cursor: pointer;
+    }
+    .flash { padding: 0.75rem 1rem; margin-bottom: 1rem; background: var(--soft); border-left: 4px solid var(--accent); }
+    .flash.error { background: #f3e4e4; border-color: var(--err); color: var(--err); }
+    table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.65); }
+    th, td { text-align: left; padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); }
+    .url { word-break: break-all; color: var(--muted); font-size: 0.85rem; }
+    .empty { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <nav>
+      <a href="{{ url_for('index') }}">Products</a>
+      <a href="{{ url_for('history') }}">All history</a>
+    </nav>
+    <h1>Universal Product Tracker</h1>
+    <p class="lede">Paste a product URL. We scrape title, price, and availability, then keep history in SQLite.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form class="track" method="post" action="{{ url_for('index') }}">
+      <input type="url" name="url" placeholder="https://example.com/product/..." required>
+      <button type="submit">Track / refresh</button>
+    </form>
+
+    {% if products %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product</th>
+          <th>Price</th>
+          <th>Availability</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{{ p.id }}</td>
+          <td>
+            <div>{{ p.title or "(no title)" }}</div>
+            <div class="url">{{ p.url }}</div>
+          </td>
+          <td>{% if p.last_price is not none %}${{ p.last_price }}{% else %}—{% endif %}</td>
+          <td>{{ p.availability or "—" }}</td>
+          <td><a href="{{ url_for('history', product_id=p.id) }}">History</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="empty">No products yet. Add a URL above to get started.</p>
+    {% endif %}
+  </main>
+</body>
+</html>
