@@ -6,6 +6,9 @@ import re
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
+# Ensure frozen-app browser path is configured before Playwright launches
+from app import config as _config  # noqa: F401
+
 
 def parse_price(raw):
     """Turn values like '$19.99' or 19.99 into a float, or None."""
